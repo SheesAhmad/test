@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Service - DrexHub</title><link rel="stylesheet" href="./styles.css"></head>
+<body class="container">
+<a href="./index.html">← Back</a>
+<div id="serviceRoot">Loading service...</div>
+<script>
+const params = new URLSearchParams(location.search);
+const id = params.get('id') || 1;
+(async function(){
+  try{
+    const res = await fetch((location.hostname.includes('localhost')? 'http://localhost:3000/api':'/api') + '/services/' + id);
+    const s = await res.json();
+    document.getElementById('serviceRoot').innerHTML = `
+      <div style="display:flex;gap:20px;margin-top:18px">
+        <img src="${s.image}" style="width:320px;height:220px;object-fit:cover;border-radius:12px"/>
+        <div>
+          <h1>${s.title}</h1>
+          <p style="color:#6b7280">${s.category} • $${s.price}</p>
+          <p>${s.description}</p>
+          <button onclick="startOrder(${s.id})" class="btn">Order Now</button>
+        </div>
+      </div>`;
+  }catch(e){
+    document.getElementById('serviceRoot').innerHTML = '<p>Service demo info.</p>';
+  }
+})();
+function startOrder(id){
+  const buyerName = prompt('Your name');
+  const buyerEmail = prompt('Your email');
+  const payment = prompt('Payment method (crypto / manual / easypaisa)');
+  fetch((location.hostname.includes('localhost')? 'http://localhost:3000':'') + '/api/orders', {
+    method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({serviceId:id,buyerName,buyerEmail,paymentMethod:payment,details:'Order from demo',tip:0})
+  }).then(r=>r.json()).then(d=>{ alert('Order created: ' + JSON.stringify(d)); }).catch(e=>alert('Order failed')); 
+}
+</script>
+</body>
+</html>
